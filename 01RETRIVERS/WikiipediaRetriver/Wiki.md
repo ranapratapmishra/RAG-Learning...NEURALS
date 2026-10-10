@@ -209,3 +209,218 @@ for doc in docs:
 | `metadata` | Additional information about the document |
 
 **In one sentence:** A Wikipedia Retriever takes a query, searches Wikipedia, and returns relevant article content as LangChain documents.
+
+
+# Document Loader vs Retriever
+
+## 1. Introduction
+
+In LangChain, Document Loaders and Retrievers are used to work with information, but their main purposes are different.
+
+- **Document Loader:** Loads data from a source and converts it into Document objects.
+- **Retriever:** Finds and returns documents relevant to a user query.
+
+Both can return LangChain Document objects, but they perform different tasks.
+
+## 2. What is a Document Loader?
+
+A Document Loader reads data from a supported source, such as a text file or PDF, and converts it into Document objects.
+
+For example, a `TextLoader` reads the content of a local `.txt` file.
+
+### Example
+
+```python
+from langchain_community.document_loaders import TextLoader
+
+loader = TextLoader("cricket.txt", encoding="utf-8")
+
+docs = loader.load()
+
+print(docs[0].page_content)
+print(docs[0].metadata)
+```
+
+### How it works
+
+1. The loader receives a file path.
+2. It reads the file content.
+3. It converts the content into Document objects.
+4. The program can access the content and metadata.
+
+**Main purpose:** To load data from a supported source.
+
+## 3. What is a Retriever?
+
+A Retriever finds documents relevant to a user query and returns them as Document objects.
+
+In this example, `WikipediaRetriever` searches Wikipedia using the user's query.
+
+### Example
+
+```python
+from langchain_community.retrievers import WikipediaRetriever
+
+retriever = WikipediaRetriever(
+    top_k_results=2,
+    lang="en"
+)
+
+query = "Who is Maharana Pratap?"
+
+docs = retriever.invoke(query)
+
+for doc in docs:
+    print(doc.page_content)
+    print(doc.metadata)
+```
+
+### How it works
+
+1. The user provides a query.
+2. The retriever searches for relevant information.
+3. It returns matching documents.
+4. The program displays the content and metadata.
+
+**Main purpose:** To retrieve documents relevant to a query.
+
+## 4. Difference Between Document Loader and Retriever
+
+| Feature | Document Loader | Retriever |
+|---|---|---|
+| Main purpose | Loads data | Retrieves relevant documents |
+| Input | A supported data source, such as a file path | A user query |
+| Output | Document objects | Document objects |
+| Query-based retrieval | Not its usual purpose | Its main purpose |
+| Example | `TextLoader` | `WikipediaRetriever` |
+| Common method | `loader.load()` | `retriever.invoke(query)` |
+| Example source | Local text file | Wikipedia search |
+
+## 5. Practical Comparison
+
+Suppose we want to learn about cricket.
+
+### Document Loader
+
+```python
+loader = TextLoader("cricket.txt", encoding="utf-8")
+docs = loader.load()
+```
+
+The loader reads the content of `cricket.txt`.
+
+It does not automatically search Wikipedia for an answer to a question.
+
+### Wikipedia Retriever
+
+```python
+retriever = WikipediaRetriever(
+    top_k_results=2,
+    lang="en"
+)
+
+docs = retriever.invoke("Who is Maharana Pratap?")
+```
+
+The retriever uses the query to find relevant Wikipedia documents.
+
+The results depend on the query and the search results returned by Wikipedia.
+
+## 6. Why Do Both Return Document Objects?
+
+LangChain uses a common Document format to represent text and its associated metadata.
+
+A Document object commonly contains:
+
+- `page_content`: The text content.
+- `metadata`: Additional information about the content, such as its source or title.
+
+This common format makes it easier to use documents in later stages of a RAG pipeline.
+
+## 7. Role in a RAG Pipeline
+
+A common RAG pipeline can be represented as:
+
+```text
+Data Sources
+     |
+     v
+Document Loader
+     |
+     v
+Text Splitter
+     |
+     v
+Embeddings
+     |
+     v
+Vector Store
+     |
+     v
+Retriever
+     |
+     v
+Relevant Documents
+     |
+     v
+LLM
+     |
+     v
+Generated Answer
+```
+
+### Explanation
+
+1. **Document Loader:** Loads information from files or other supported sources.
+2. **Text Splitter:** Divides large documents into smaller chunks.
+3. **Embeddings:** Converts text chunks into numerical representations.
+4. **Vector Store:** Stores and indexes the chunks for similarity search.
+5. **Retriever:** Finds relevant chunks for a user query.
+6. **LLM:** Uses the retrieved context to generate an answer.
+
+This is a common RAG design. Different implementations may use different components.
+
+### Where Does Wikipedia Retriever Fit?
+
+`WikipediaRetriever` is a special case because it can search Wikipedia directly.
+
+It does not require you to first load local files, create embeddings, and build a vector store for its basic search functionality.
+
+It retrieves documents from Wikipedia based on the query.
+
+## 8. Important Concept
+
+**Not every Retriever requires a Vector Store.**
+
+- `WikipediaRetriever` searches Wikipedia.
+- A Vector Store Retriever searches documents indexed in a vector store.
+- A Document Loader reads data from a supported source.
+
+A Retriever and a Document Loader are therefore not interchangeable.
+
+## 9. Limitations
+
+### Document Loader
+
+- It depends on the supported data source and loader implementation.
+- Loading a document does not automatically mean that the answer to a query has been found.
+
+### Wikipedia Retriever
+
+- An internet connection is required for Wikipedia searches.
+- Results depend on the query and Wikipedia search results.
+- Retrieved documents may contain related information rather than a complete answer.
+- Retrieval alone does not generate an LLM answer.
+
+## 10. Quick Revision
+
+- **Document Loader = Load data.**
+- **Retriever = Find relevant documents.**
+- **Document = Text content plus metadata.**
+- **Text Splitter = Divide documents into chunks.**
+- **Vector Store = Store and index vectors for search.**
+- **LLM = Generate an answer using the available context.**
+
+## 11. Learning Objective
+
+Understand the difference between loading data and retrieving relevant information, and learn how both components can be used in a Retrieval-Augmented Generation (RAG) pipeline.
