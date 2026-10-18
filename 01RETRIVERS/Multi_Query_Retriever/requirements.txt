@@ -1,0 +1,6 @@
+
+langchain-classic
+langchain-community
+langchain-core
+langchain-ollama
+faiss-cpu
